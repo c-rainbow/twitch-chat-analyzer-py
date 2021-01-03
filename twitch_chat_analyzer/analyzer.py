@@ -113,8 +113,3 @@ def FromVideoId(video_id) -> ChatAnalyzer:
   data_json = downloader.downloadChat(video_id)
   return ChatAnalyzer(data_json['video'], data_json['comments'])
 
-
-ann = FromVideoId(857482176)
-
-#df = ann.ToDataFrame()
-

@@ -1,3 +1,4 @@
+import typing
 import requests
 
 BASE_URL = 'https://api.twitch.tv/v5/%s'
@@ -9,7 +10,7 @@ CLIENT_ID = 's2frr164040bp9l6mgurxaz32i6rm1'
 
 class TwitchClient:
 
-  def __init__(self, client_id=CLIENT_ID):
+  def __init__(self, client_id: str = CLIENT_ID):
     self.client_id = client_id
     self.session = requests.Session()
     self.headers = {
@@ -17,14 +18,14 @@ class TwitchClient:
       'Accept': 'application/vnd.twitchtv.v5+json'
     }
 
-  def GetUsernameFromVideo(self, video_id):
+  def GetUsernameFromVideo(self, video_id) -> str:
     video_json = self.GetVideo(video_id)
     if not video_json:
       return None
 
     return video_json['channel']['name']
 
-  def GetVideo(self, video_id):
+  def GetVideo(self, video_id) -> dict[str, typing.Any]:
     url = BASE_URL % 'videos/' + str(video_id)
     return self._GetUrl(url)
 

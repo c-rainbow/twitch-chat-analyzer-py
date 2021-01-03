@@ -8,7 +8,7 @@ from twitch_chat_analyzer import kraken
 CLIENT_ID = "s2frr164040bp9l6mgurxaz32i6rm1"  # Test client ID 
 
 
-def downloadChat(video_id):
+def downloadChat(video_id, save_to_file=True):
   client = kraken.TwitchClient(CLIENT_ID)
   video_json = client.GetVideo(video_id)
   if not video_json:
@@ -33,7 +33,8 @@ def downloadChat(video_id):
   sys.stdout.write('\nDownload complete in %d seconds' % (end_time - start_time))
 
   data_json = {"video": video_json, "comments": comments}
-  save_chat(video_id, data_json)
+  if save_to_file:
+    save_chat(video_id, data_json)
 
   return data_json
 
