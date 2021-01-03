@@ -1,0 +1,4 @@
+arrow>=0.17
+pandas >= 1.2
+requests >= 2.25
+matplotlib >= 3.3

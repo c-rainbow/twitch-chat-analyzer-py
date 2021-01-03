@@ -1,6 +1,7 @@
 
 import json
 import collections
+import typing
 from matplotlib import pyplot as plt
 import math
 import os
@@ -8,21 +9,99 @@ import pandas as pd
 
 from twitch_chat_analyzer import kraken
 from twitch_chat_analyzer import downloader
+from twitch_chat_analyzer import models as tca_models
 
 
-COLUMNS = ['offset', 'username', 'display_name', 'body', 'bits', 'subscription']
+class ChatAnalyzer:
+  def __init__(self, video_json, comments_json):
+    self.video = video_json
+    self.comments = [tca_models.Comment(comment_json) for comment_json in comments_json]
+
+  def DrawChatPerMinute(self, minute: int = 5):
+    chat_counts = self.GetChatPerMinute(minute)
+    x = [str(index * minute) for index in range(len(chat_counts))]
+
+    plt.bar(x, chat_counts, color='pink')
+    plt.show()
+
+  def GetChatPerMinute(self, minute: int = 5) -> typing.List[int]:
+    total_seconds = minute * 60
+    total_slots = int(math.ceil(self.video['length'] / total_seconds))
+    counts = [0] * total_slots
+    for comment in self.comments:
+      index = int(comment.offset / total_seconds)
+      counts[index] += 1
+
+    return counts
+
+  def DrawTopEmotes(self, top: int = 10):
+    emote_counts = self.GetEmoteCounts()[:top]
+    names, counts = zip(*emote_counts)
+
+    plt.xticks(rotation=45, ha='right')
+    plt.bar(names, counts, color='#00917C')
+    plt.show()
+
+  def GetEmoteCounts(self) -> typing.List[typing.Tuple[str, int]]:
+    emote_dict: typing.Dict[str, int] = collections.defaultdict(int)
+    for comment in self.comments:
+      emotes = comment.emotes
+      for emote in emotes:
+        emote_dict[emote] += 1
+    
+    return self._SortedByCount(emote_dict)
+  
+  def DrawTopUniqueEmotes(self, top: int = 10):
+    unique_emote_counts = self.GetUniqueEmoteCounts()[:top]
+    names, counts = zip(*unique_emote_counts)
+
+    plt.xticks(rotation=45, ha='right')
+    plt.bar(names, counts, color='#61B15A')
+    plt.show()
+
+  def GetUniqueEmoteCounts(self) -> typing.List[typing.Tuple[str, int]]:
+    unique_emote_dict: typing.Dict[str, int] = collections.defaultdict(int)
+    for comment in self.comments:
+      unique_emotes = comment.unique_emotes
+      for emote in unique_emotes:
+        unique_emote_dict[emote] += 1
+
+    return self._SortedByCount(unique_emote_dict)
+
+  def DrawTopChatters(self, top: int = 10):
+    chat_counts = self.GetTopChatters()[:top]
+    names, counts = zip(*chat_counts)
+
+    plt.xticks(rotation=45, ha='right')
+    plt.bar(names, counts, color='#79A3B1')
+    plt.show()
+
+  def GetTopChatters(self) -> typing.List[typing.Tuple[str, int]]:
+    chat_count: typing.Dict[str, int] = collections.defaultdict(int)
+    for comment in self.comments:
+      chat_count[comment.display_name] += 1
+
+    return self._SortedByCount(chat_count)
+
+  def ToDataFrame(self) -> pd.DataFrame:
+    return pd.DataFrame(self.comments)   
+
+  def _SortedByCount(self, counts: typing.Dict[str, int]) -> typing.List[typing.Tuple[str, int]]:
+    sorted_counts = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    return sorted_counts
 
 
-def FromFile(filepath):
+def FromFile(filepath) -> ChatAnalyzer:
   with open(filepath, 'r', encoding='utf8') as f:
     try:
       data_json = json.load(f)
       return ChatAnalyzer(data_json['video'], data_json['comments'])
     except Exception as e:
       print('Cannot load the file', filepath, '. Reason:', e)
+      raise e
 
 
-def FromVideoId(video_id):
+def FromVideoId(video_id) -> ChatAnalyzer:
   # First check if the chat log was already downloaded
   client = kraken.TwitchClient()
   username = client.GetUsernameFromVideo(video_id)
@@ -30,121 +109,12 @@ def FromVideoId(video_id):
   if os.path.exists(path):
     return FromFile(path)
   
+  # If not already downloaded, download the chat
   data_json = downloader.downloadChat(video_id)
   return ChatAnalyzer(data_json['video'], data_json['comments'])
 
 
-class ChatAnalyzer:
-  def __init__(self, video_json, comments_json):
-    self.video = video_json
+ann = FromVideoId(857482176)
 
-    comments = [Comment(comment_json) for comment_json in comments_json]
-    self.original_comments = comments
-    self.comments = comments
-    self.filter = None
+#df = ann.ToDataFrame()
 
-  def Filter(self, filter_str):
-    pass
-
-  def ChatPerMinute(self, minute: int = 5):
-    chat_counts = self.countChatsByMinutes(minute)
-    x = [str(index * minute) for index in range(len(chat_counts))]
-
-    plt.bar(x, chat_counts, color='pink')
-    plt.show()
-
-  def countChatsByMinutes(self, minute: int):
-    total_seconds = minute * 60
-    total_slots = int(math.ceil(self.video['length'] / total_seconds))
-    counts = [0] * total_slots
-    for comment in self.comments:
-      index = int(comment.content_offset_seconds / total_seconds)
-      counts[index] += 1
-
-    return counts
-
-  def TopEmotes(self, top=10):
-    emote_dict = self.countEmotes()
-    emote_list = list(emote_dict.items())
-    print(emote_list)
-    emote_list = sorted(emote_list, key=lambda item: (-item[1], item[0]))
-    emote_list = emote_list[:top]
-
-    names, counts = zip(*emote_list)
-    print(names)
-    print(counts)
-    plt.xticks(rotation=45, ha='right')
-    plt.bar(names, counts, color='#333333')
-    plt.show()
-
-
-  def countEmotes(self):
-    emote_dict = collections.defaultdict(int)
-    for comment in self.comments:
-      fragments = comment.message['fragments']
-      for fragment in fragments:
-        if 'emoticon' in fragment:
-          emote_dict[fragment['text']] += 1
-    
-    return emote_dict
-
-  def GetChats(self):
-    pass
-
-  def ClearFilter(self):
-    self.comments = self.original_comments
-
-  def ToDataFrame(self):
-    comments = []
-    for comment in self.comments:
-      comments.append([
-        comment.offset,
-        comment.name,
-        comment.display_name,
-        comment.body,
-        comment.bits,
-        comment.IsSubscription()
-      ])
-
-    return pd.DataFrame(comments, columns=COLUMNS)
-
-def GetTextBody(fragments):
-  texts = []
-  for fragment in fragments:
-    if 'emoticon' not in fragment:
-      texts.append(fragment['text'].strip())
-
-  return ' '.join(texts)
-
-
-
-
-class Comment:
-  def __init__(self, comment_json):
-    self.comment = comment_json
-    self.commenter = comment_json['commenter']
-    self.message = comment_json['message']
-
-  @property
-  def offset(self):
-    return self.comment['content_offset_seconds']
-
-  @property
-  def name(self) -> str:
-    return self.commenter['name']
-  
-  @property
-  def display_name(self) -> str:
-    return self.commenter['display_name']
-
-  @property
-  def body(self) -> str:
-    return self.message['body']
-
-  @property
-  def bits(self) -> int:
-    return self.message.get('bits_spent', 0)
-
-  def IsSubscription(self) -> bool:
-    msg_id = self.message.get('user_notice_params', {}).get('msg_id')
-    return msg_id in ('sub', 'resub')

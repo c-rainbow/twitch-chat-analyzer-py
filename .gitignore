@@ -130,3 +130,7 @@ dmypy.json
 
 # Downloaded chat files
 chatlogs/
+
+# PyPi related ile
+upload_readme.txt
+
