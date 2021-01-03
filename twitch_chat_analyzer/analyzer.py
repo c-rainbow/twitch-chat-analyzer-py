@@ -84,7 +84,7 @@ class ChatAnalyzer:
     return self._SortedByCount(chat_count)
 
   def ToDataFrame(self) -> pd.DataFrame:
-    return pd.DataFrame(self.comments)   
+    return pd.DataFrame([comment.ToDict() for comment in self.comments])  
 
   def _SortedByCount(self, counts: typing.Dict[str, int]) -> typing.List[typing.Tuple[str, int]]:
     sorted_counts = sorted(counts.items(), key=lambda item: (-item[1], item[0]))

@@ -1,9 +1,6 @@
 '''Model classes'''
 
-import datetime
-
-# Datetime format used in Twitch chat logs, e.g. '2020-10-31T19:01:03.811Z'
-TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f%z'
+import typing
 
 
 # Model class for chat comment
@@ -17,10 +14,6 @@ class Comment:
   @property
   def offset(self) -> float:
     return self._comment['content_offset_seconds']
-
-  @property
-  def utc_timestamp(self) -> datetime.datetime:
-    return datetime.datetime.strptime(self._comment['created_at'], TIME_FORMAT)
 
   @property
   def username(self) -> str:
@@ -60,7 +53,7 @@ class Comment:
     return ' '.join(texts)
   
   @property
-  def emotes(self) -> list[str]:
+  def emotes(self) -> typing.List[str]:
     emotes = []
     for fragment in self._fragments:
       if 'emoticon' in fragment:
@@ -69,7 +62,7 @@ class Comment:
     return emotes
 
   @property
-  def unique_emotes(self) -> set[str]:
+  def unique_emotes(self) -> typing.Set[str]:
     return set(self.emotes)
 
   @property
@@ -91,10 +84,9 @@ class Comment:
     msg_id = self._message.get('user_notice_params', {}).get('msg_id')
     return msg_id in ('sub', 'resub')
 
-  def __dict__(self) -> dict:
+  def ToDict(self) -> typing.Dict[str, typing.Union[str, int, float]]:
     return {
       'offset': self.offset,
-      'utc_timestamp': self.utc_timestamp,
       'username': self.username,
       'display_name': self.display_name,
       'name': self.name,
