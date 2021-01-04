@@ -81,7 +81,7 @@ class Comment:
   @property
   def is_sub_notice(self) -> bool:
     # If this is a subscription notice message
-    msg_id = self._message.get('user_notice_params', {}).get('msg_id')
+    msg_id = self._message.get('user_notice_params', {}).get('msg-id')
     return msg_id in ('sub', 'resub')
 
   def ToDict(self) -> typing.Dict[str, typing.Union[str, int, float]]:

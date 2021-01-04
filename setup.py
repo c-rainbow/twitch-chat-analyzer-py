@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="twitch-chat-analyzer", # Replace with your own username
-    version="0.0.1",
+    version="0.0.3",
     author="Rainbow",
     author_email="c.rainbow.678@gmail.com",
     description="Twitch chat analyzer from past broadcasts, designed for Jupyter notebook",
