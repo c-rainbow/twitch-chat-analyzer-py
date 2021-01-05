@@ -40,8 +40,8 @@ ann.DrawTopEmotes(15)  # Top N most used emotes
 
 # If you just want to get the data
 ann.GetChatPerMinute(10)  # Chat counts for each 10-minute interval, list of (offset, count)
-ann.GetTopChatters(20)  # Top 20 viewers with most chats, list of (name, chat_count)
-ann.GetTopEmotes(15)  # Top 15 most used emotes, list of (emote_name, count)
+ann.GetTopChatters()  # Viewer names and chat counts, list of (name, chat_count), sorted by chat count
+ann.GetEmoteCounts()  # Emotes and usage counts, list of (emote_name, count), sorted by count
 
 # If you want to handle dataframe yourself
 df = ann.ToDataFrame()
@@ -49,7 +49,7 @@ df = ann.ToDataFrame()
 # Some useful functions to deal with dataframe
 df[df['is_sub_notice']]  # Show new/renew subscription notice messages
 df[df['bits'] > 0]  # Show messages with bits
-df[['text_body']].mean()  # Average chat length (excluding emotes)
+df['text_body'].apply(len).mean()  # Average chat length (excluding emotes)
 
 ```
 
