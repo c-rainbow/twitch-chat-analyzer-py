@@ -34,9 +34,14 @@ from twitch_chat_analyzer import analyzer
 ann = analyzer.FromVideoId('REPLACE_HERE_TO_VIDEO_ID')
 
 # Some pre-built statistics functions to draw graph
-ann.DrawChatPerMinutes(10)  # Chat counts for each N-minute interval
+ann.DrawChatPerMinute(10)  # Chat counts for each N-minute interval
 ann.DrawTopChatters(20)  # Top N viewers with most chats
 ann.DrawTopEmotes(15)  # Top N most used emotes
+
+# If you just want to get the data
+ann.GetChatPerMinute(10)  # Chat counts for each 10-minute interval, list of (offset, count)
+ann.GetTopChatters(20)  # Top 20 viewers with most chats, list of (name, chat_count)
+ann.GetTopEmotes(15)  # Top 15 most used emotes, list of (emote_name, count)
 
 # If you want to handle dataframe yourself
 df = ann.ToDataFrame()
