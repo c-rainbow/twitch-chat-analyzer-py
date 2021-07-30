@@ -25,7 +25,7 @@ class TwitchClient:
 
     return video_json['channel']['name']
 
-  def GetVideo(self, video_id) -> Dict[str, typing.Any]:
+  def GetVideo(self, video_id) -> typing.Dict[str, typing.Any]:
     url = BASE_URL % 'videos/' + str(video_id)
     return self._GetUrl(url)
 
