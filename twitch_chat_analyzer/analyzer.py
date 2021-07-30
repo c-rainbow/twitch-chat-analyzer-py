@@ -11,6 +11,8 @@ from twitch_chat_analyzer import kraken
 from twitch_chat_analyzer import downloader
 from twitch_chat_analyzer import models as tca_models
 
+import typing
+
 
 class ChatAnalyzer:
   def __init__(self, video_json, comments_json):
